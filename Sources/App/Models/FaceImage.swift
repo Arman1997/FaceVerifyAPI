@@ -39,7 +39,7 @@ final class FaceImage: Model {
 
 extension FaceImage: Preparation {
     static func prepare(_ database: Database) throws {
-        try database.create(self) { faceImgae in
+        try database.create(self) { faceImage in
             faceImage.id()
             faceImage.string(FaceImage.Keys.faceId)
             faceImage.string(FaceImage.Keys.faceImagePath)
