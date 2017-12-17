@@ -4,7 +4,6 @@
 //
 //  Created by Arman Galstyan on 12/4/17.
 //
-
 import Foundation
 
 final class FileCachingManager {

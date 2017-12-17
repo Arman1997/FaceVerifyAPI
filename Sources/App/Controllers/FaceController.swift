@@ -41,7 +41,6 @@ struct NewCreatedPerson: ResponseRepresentable,JSONRepresentable {
         static let personId = "personId"
         static let faceIds = "faceIds"
     }
-    
     var personId: String
     var faceIdsArray: [String]
     
