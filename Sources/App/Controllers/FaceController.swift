@@ -23,7 +23,6 @@ class FaceController {
         let newPersonId = personId
 
         let imageData = Data(bytes: imageDataBytes)
-        
         var imagePath = String()
         try FileCachingManager.sharedInstance.saveImage(withData: imageData) { (path) in
             imagePath = path
