@@ -4,7 +4,7 @@
 //
 //  Created by Arman Galstyan on 12/4/17.
 //
-
+import Foundation
 import Vapor
 import HTTP
 import FluentProvider
@@ -15,39 +15,48 @@ class FaceController {
         return try Face.all().makeJSON()
     }
     
-    func saveNewFaces(_ req: Request) throws -> ResponseRepresentable {
-        guard let imagePaths = req.json?.wrapped["imagePaths"]?.pathIndexableObject?.map({ $0.value.string ?? "" }) else {
+    func saveNewFace(_ req: Request) throws -> ResponseRepresentable {
+        guard let imageDataBytes = req.data["faceImage"]?.bytes,
+              let personId = req.data["personId"]?.string else {
             throw Abort.badRequest
         }
-       
-        let newPersonId = UUID().uuidString
-        var faceIdsArray = [String]()
-        try imagePaths.forEach({ (imagePath) in
-            let newFaceId = UUID().uuidString
-            let newFace = Face(faceId: newFaceId, personId: newPersonId, imagePath: imagePath)
-            try newFace.save()
-            faceIdsArray.append(newFaceId)
-        })
+        let newPersonId = personId
+
+        let imageData = Data(bytes: imageDataBytes)
         
-        let newCreatedPerson = NewCreatedPerson(personId: newPersonId, faceIdsArray: faceIdsArray)
+        var imagePath = String()
+        try FileCachingManager.sharedInstance.saveImage(withData: imageData) { (path) in
+            imagePath = path
+        }
+        
+        var newFaceId = String()
+        try TrainController.shared.appendFaces(withDatas: [imageData]) { (faceId) in
+            newFaceId = faceId
+            TrainController.shared.sartTrain()
+        }
+
+        let newFaceObjcet = Face(faceId: newFaceId, personId: personId, imagePath: imagePath)
+        try newFaceObjcet.save()
+        
+        let newCreatedPerson = NewCreatedPersonFace(personId: newPersonId, faceId: newFaceId)
         return newCreatedPerson
     }
     
 }
 
 
-struct NewCreatedPerson: ResponseRepresentable,JSONRepresentable {
+struct NewCreatedPersonFace: ResponseRepresentable,JSONRepresentable {
     struct Keys {
         static let personId = "personId"
-        static let faceIds = "faceIds"
+        static let faceId = "faceIds"
     }
     var personId: String
-    var faceIdsArray: [String]
+    var faceId: String
     
     func makeJSON() throws -> JSON {
         var json = JSON()
         try json.set(Keys.personId, self.personId)
-        try json.set(Keys.faceIds, self.faceIdsArray)
+        try json.set(Keys.faceId, self.faceId)
         return json
     }
 }
