@@ -20,9 +20,9 @@ final class Face: Model {
     }
     
     let storage = Storage()
-    private var faceId: String
-    private var personId: String
-    private var imagePath: String
+    var faceId: String
+    var personId: String
+    var imagePath: String
     
     
     init(row: Row) throws {

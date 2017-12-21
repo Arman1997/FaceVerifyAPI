@@ -18,6 +18,7 @@ final class TrainController {
         
     }
     
+    let trainOperationQueue = OperationQueue()
     
     func appendFaces(withDatas datas: [Data],completion: (String) -> Void) throws {
         try datas.forEach { (data) in
@@ -31,7 +32,10 @@ final class TrainController {
     }
     
     func sartTrain() {
-        recognitionController.startTrain()
+        trainOperationQueue.cancelAllOperations()
+        trainOperationQueue.addOperation {
+            self.recognitionController.startTrain()
+        }
     }
     
     func recognizePerson(withImageData data: Data, completion: (String) -> Void) throws {
